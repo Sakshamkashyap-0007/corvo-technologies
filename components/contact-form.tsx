@@ -2,8 +2,6 @@
 
 import { FormEvent, useState } from "react";
 
-const WEB3FORMS_ACCESS_KEY = "76b82bd2-a1ee-4341-8849-ecd9235f33b4";
-
 const initialValues = {
   fullName: "",
   workEmail: "",
@@ -30,19 +28,19 @@ export function ContactForm() {
     setStatus("submitting");
     setMessage("");
 
-    const formData = new FormData(event.currentTarget);
-    formData.append("access_key", WEB3FORMS_ACCESS_KEY);
-
-    const response = await fetch("https://api.web3forms.com/submit", {
+    const response = await fetch("/api/contact", {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
     });
 
     const data = await response.json();
 
-    if (!response.ok || !data.success) {
+    if (!response.ok || !data.ok) {
       setStatus("error");
-      setMessage(data.message || "Please check the form and try again.");
+      setMessage(data.error || "Please check the form and try again.");
       return;
     }
 
