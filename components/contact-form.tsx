@@ -7,16 +7,41 @@ export function ContactForm() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+
+    const form = event.currentTarget;
+    const submitBtn = form.querySelector("button[type='submit']") as HTMLButtonElement | null;
+
+    const formData = new FormData(form);
     formData.append("access_key", "fdca3f54-7ba4-487b-a6b3-f6ce9eac7fe6");
 
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formData,
-    });
+    const originalText = submitBtn?.textContent || "Submit";
+    if (submitBtn) {
+      submitBtn.textContent = "Sending...";
+      submitBtn.disabled = true;
+    }
 
-    const data = await response.json();
-    setResult(data.success ? "Success!" : "Error");
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult("Success! Your message has been sent.");
+        form.reset();
+      } else {
+        setResult("Error: " + (data.message || "Please try again."));
+      }
+    } catch (error) {
+      setResult("Something went wrong. Please try again.");
+    } finally {
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    }
   };
 
   return (
@@ -54,7 +79,7 @@ export function ContactForm() {
 
       <button
         type="submit"
-        className="inline-flex items-center justify-center rounded-full bg-[#0d2448] px-6 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#15345d]"
+        className="inline-flex items-center justify-center rounded-full bg-[#0d2448] px-6 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-[#15345d] disabled:cursor-not-allowed disabled:opacity-70"
       >
         Submit
       </button>
